@@ -1,4 +1,4 @@
-OBJ=common.o connect.o const.o debug.o disconnect.o main.o publish.o ffi.o kremlinit.o callMain.o
+OBJ=Common.o Connect.o Const.o Debug.o Disconnect.o Main.o Publish.o ffi.o kremlinit.o callMain.o
 KREMLIB=./kremlin/kremlib
 INCLUDE=./kremlin/include
 
