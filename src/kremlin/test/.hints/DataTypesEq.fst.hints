@@ -1,0 +1,74 @@
+[
+  "ý»Ž‹¸…—Ë¶\"\u001e™ºY\u0001â",
+  [
+    [
+      "DataTypesEq.t",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.eqtype",
+        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
+        "typing_FStar.UInt32.t"
+      ],
+      0,
+      "3b3dc4e8490f7bc8bbb3f465f892f381"
+    ],
+    [
+      "DataTypesEq.__proj__A__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "disc_equation_DataTypesEq.A",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_7fe4ec39530be71d09622e6ea631b362"
+      ],
+      0,
+      "c6405e5942e2e2bc41c12dfcee29ad9a"
+    ],
+    [
+      "DataTypesEq.__proj__B__item___0",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "disc_equation_DataTypesEq.B",
+        "projection_inverse_BoxBool_proj_0",
+        "refinement_interpretation_Tm_refine_4d5e6c06bbfb6471b81e2745aebd0ea5"
+      ],
+      0,
+      "0dab8e1728b041044a6c724a957eeadc"
+    ],
+    [
+      "DataTypesEq.f",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "equation_FStar.HyperStack.ST.equal_domains",
+        "equation_FStar.Monotonic.Heap.equal_dom",
+        "equation_FStar.Monotonic.HyperHeap.hmap",
+        "equation_FStar.Monotonic.HyperStack.mem",
+        "function_token_typing_FStar.Monotonic.Heap.heap",
+        "lemma_FStar.HyperStack.ST.lemma_same_refs_in_all_regions_intro",
+        "lemma_FStar.Set.lemma_equal_refl",
+        "refinement_interpretation_Tm_refine_05e15190c946858f68c69156f585f95a",
+        "typing_FStar.Map.domain", "typing_FStar.Monotonic.HyperHeap.rid",
+        "typing_FStar.Monotonic.HyperStack.get_hmap"
+      ],
+      0,
+      "5efee250b16eb39f7291018248b7717a"
+    ],
+    [
+      "DataTypesEq.main",
+      1,
+      2,
+      1,
+      [ "@query", "assumption_DataTypesEq.t__uu___haseq" ],
+      0,
+      "ef9e8d613734e87927dc84a3a488944d"
+    ]
+  ]
+]

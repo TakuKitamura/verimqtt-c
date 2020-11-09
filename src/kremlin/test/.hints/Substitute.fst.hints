@@ -1,0 +1,56 @@
+[
+  "%eŒo3PÅ}´\rñ\u0010®c\u001b5",
+  [
+    [
+      "Substitute.test",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_FStar.Buffer.buffer",
+        "equation_Prims.eqtype",
+        "fuel_guarded_inversion_FStar.Buffer._buffer",
+        "lemma_FStar.Buffer.lemma_equal_domains",
+        "lemma_FStar.Buffer.lemma_fresh_poppable",
+        "lemma_FStar.Buffer.live_fresh",
+        "lemma_FStar.Buffer.modifies_poppable_1",
+        "refinement_interpretation_Tm_refine_156c49afb7e1e070fbb2e47dc0e3d4b2",
+        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
+        "refinement_interpretation_Tm_refine_872ff9ce3f8d0c8a57c11b779dec8d15",
+        "refinement_interpretation_Tm_refine_9f7f0b35f4b82d393c3be81e5eca7cb2",
+        "typing_FStar.Int32.t"
+      ],
+      0,
+      "4880eadde4ec7c647e5bd2ba0928e115"
+    ],
+    [
+      "Substitute.main",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query",
+        "FStar.Int32_pretyping_8024a8d755d67cd5177aef3bba3eedab",
+        "equality_tok_C.EXIT_SUCCESS@tok", "equation_FStar.Buffer.buffer",
+        "equation_FStar.HyperStack.ST.equal_domains",
+        "equation_FStar.HyperStack.ST.inline_stack_inv",
+        "equation_FStar.Monotonic.HyperStack.fresh_frame",
+        "equation_FStar.Monotonic.HyperStack.is_tip",
+        "equation_FStar.Monotonic.HyperStack.is_wf_with_ctr_and_tip",
+        "equation_FStar.Monotonic.HyperStack.mem",
+        "equation_FStar.Monotonic.HyperStack.poppable",
+        "fuel_guarded_inversion_FStar.Buffer._buffer",
+        "lemma_FStar.Buffer.lemma_equal_domains_2",
+        "lemma_FStar.Buffer.lemma_fresh_poppable",
+        "projection_inverse_BoxInt_proj_0",
+        "refinement_interpretation_Tm_refine_05e15190c946858f68c69156f585f95a",
+        "refinement_interpretation_Tm_refine_156c49afb7e1e070fbb2e47dc0e3d4b2",
+        "refinement_interpretation_Tm_refine_9f7f0b35f4b82d393c3be81e5eca7cb2",
+        "refinement_interpretation_Tm_refine_f63e058f9631c11993f3ef0430296051",
+        "typing_tok_C.EXIT_SUCCESS@tok"
+      ],
+      0,
+      "6877f2a95a6216d8d64fed786eef9e41"
+    ]
+  ]
+]

@@ -1,0 +1,27 @@
+[
+  "%tÅ¨{wˆ†) ≥\u0015˜3m3",
+  [
+    [
+      "BadMatch.bar",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.eqtype",
+        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
+        "typing_FStar.UInt32.t"
+      ],
+      0,
+      "872d3b44629fea191c1256f85522c3e7"
+    ],
+    [
+      "BadMatch.baz",
+      1,
+      2,
+      1,
+      [ "@query", "assumption_BadMatch.bar__uu___haseq" ],
+      0,
+      "6468fc9f94c754508ab356cd1d7a52ec"
+    ]
+  ]
+]

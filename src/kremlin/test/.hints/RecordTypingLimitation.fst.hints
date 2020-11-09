@@ -1,0 +1,18 @@
+[
+  "!Ì\u0002kòÆ\u0006¬úÁ∑Î\u0004\u0013ÅN",
+  [
+    [
+      "RecordTypingLimitation.t",
+      1,
+      2,
+      1,
+      [
+        "@MaxIFuel_assumption", "@query", "equation_Prims.eqtype",
+        "refinement_interpretation_Tm_refine_414d0a9f578ab0048252f8c8f552b99f",
+        "typing_FStar.Int32.t"
+      ],
+      0,
+      "7807eb9452fcd6dd06826e95166e24f3"
+    ]
+  ]
+]
