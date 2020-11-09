@@ -14,8 +14,42 @@ add_executable(MQTTc
 
     ClassPath/src/bstrlib.c)
 
+include_directories(extract)
+include_directories(kremlin/kremlib)
+include_directories(kremlin/include)
+
 add_executable(MQTTParsePacket 
-    MQTTParsePacket.cpp
+    endpoint.cpp
+    extract/Common.c
+    extract/Connect.c
+    extract/Const.c
+    extract/Debug.c
+    extract/Disconnect.c
+    extract/ffi.c
+    extract/kremlinit.c
+    extract/Main.c
+    extract/Publish.c
+    kremlin/kremlib/dist/generic/testlib.c
+    kremlin/kremlib/dist/generic/prims.c
+    kremlin/kremlib/dist/generic/lowstar_printf.c
+    kremlin/kremlib/dist/generic/fstar_uint8.c
+    kremlin/kremlib/dist/generic/fstar_uint64.c
+    kremlin/kremlib/dist/generic/fstar_uint32.c
+    kremlin/kremlib/dist/generic/fstar_uint16.c
+    kremlin/kremlib/dist/generic/fstar_string.c
+    kremlin/kremlib/dist/generic/fstar_io.c
+    kremlin/kremlib/dist/generic/fstar_int8.c
+    kremlin/kremlib/dist/generic/fstar_int64.c
+    kremlin/kremlib/dist/generic/fstar_int32.c
+    kremlin/kremlib/dist/generic/fstar_int16.c
+    kremlin/kremlib/dist/generic/fstar_hyperstack_io.c
+    kremlin/kremlib/dist/generic/fstar_dyn.c
+    kremlin/kremlib/dist/generic/fstar_date.c
+    kremlin/kremlib/dist/generic/fstar_char.c
+    # kremlin/kremlib/dist/generic/fstar_bytes.c
+    kremlin/kremlib/dist/generic/c_string.c
+    kremlin/kremlib/dist/generic/c.c
+    # kremlin/kremlib/dist/generic/libkremlib.a
     ClassPath/src/bstrwrap.cpp
     ClassPath/src/HashKey.cpp
     ClassPath/src/Lock.cpp

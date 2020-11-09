@@ -5,7 +5,7 @@ if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW)
 endif ()
 
-project(eMQTT5)
+project(src)
 
 option(REDUCED_FOOTPRINT "Whether to enable reduced footprint for the client code" ON)
 option(CROSSPLATFORM_SOCKET "Whether to use cross plaftform socket code (this disable SSL)" OFF)

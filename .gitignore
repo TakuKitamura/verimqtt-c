@@ -1,3 +1,18 @@
+# cmake
+src/CMakeCache.txt
+src/CMakeFiles/
+src/Makefile
+src/cmake_install.cmake
+src/lib/CMakeFiles/
+src/lib/Makefile
+src/lib/cmake_install.cmake
+src/lib/libeMQTT5.a
+src/tests/CMakeFiles/
+src/tests/MQTTParsePacket
+src/tests/MQTTc
+src/tests/Makefile
+src/tests/cmake_install.cmake
+
 # exe
 verimqtt
 

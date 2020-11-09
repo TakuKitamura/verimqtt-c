@@ -1,2 +1,2 @@
 all:
-	make -C src
+	cmake src && make -C src

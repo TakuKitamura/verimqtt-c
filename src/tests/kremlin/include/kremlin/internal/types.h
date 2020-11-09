@@ -91,15 +91,15 @@ typedef FStar_UInt128_uint128 FStar_UInt128_t, uint128_t;
 
 /* Avoid a circular loop: if this header is included via FStar_UInt8_16_32_64,
  * then don't bring the uint128 definitions into scope. */
-#ifndef __FStar_UInt_8_16_32_64_H
+// #ifndef __FStar_UInt_8_16_32_64_H
 
-#if !defined(KRML_VERIFIED_UINT128) && defined(IS_MSVC64)
-#include "fstar_uint128_msvc.h"
-#elif !defined(KRML_VERIFIED_UINT128) && defined(HAS_INT128)
-#include "fstar_uint128_gcc64.h"
-#else
-#include "FStar_UInt128_Verified.h"
-#include "fstar_uint128_struct_endianness.h"
-#endif
+// #if !defined(KRML_VERIFIED_UINT128) && defined(IS_MSVC64)
+// #include "fstar_uint128_msvc.h"
+// #elif !defined(KRML_VERIFIED_UINT128) && defined(HAS_INT128)
+// #include "fstar_uint128_gcc64.h"
+// #else
+// #include "FStar_UInt128_Verified.h"
+// #include "fstar_uint128_struct_endianness.h"
+// #endif
 
-#endif
+// #endif
