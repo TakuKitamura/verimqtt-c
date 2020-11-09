@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <array> 
 
 // We need Logger
 // #include "Logger/Logger.hpp"
@@ -368,39 +369,65 @@ int main(int argc, char ** argv)
 {
     // InitLogger initLogger(true);
     // First convert the input from what it is to something we can parse
-    if (argc == 1 || (argc == 2 && String("--help") == argv[1]))
-    {
-        printf("MQTTv5 Packet Parser\nUsage is: %s (BinaryPath)\n", argv[0]);
-        return 0; 
+    // if (argc == 1 || (argc == 2 && String("--help") == argv[1]))
+    // {
+    //     printf("MQTTv5 Packet Parser\nUsage is: %s (BinaryPath)\n", argv[0]);
+    //     return 0; 
+    // }
+
+    int binary_count = 16;
+
+    String mqttPacketBinaryPath[binary_count] = {
+        "bin/property/property_four_byte/property_four_byte.bin",
+        "bin/property/property_utf8_pair_string/property_utf8_pair_string.bin",
+        "bin/property/property_variable_byte_integer/property_variable_byte.bin",
+        "bin/property/property_two_byte/property_two_byte.bin",
+        "bin/property/property_binary_data/property_binary_data.bin",
+        "bin/property/property_one_byte/property_one_byte.bin",
+        "bin/property/property_utf8_string/property_utf8_string.bin",
+        "bin/connect/connect_will/connect_will.bin",
+        "bin/connect/connect_all/connect_all.bin",
+        "bin/connect/normal_connect/normal_connect.bin",
+        "bin/connect/connect_user/connect_user.bin",
+        "bin/connect/connect_password/connect_password.bin",
+        "bin/disconnect/normal_disconnect/normal_disconnect.bin",
+        "bin/disconnect/disconnect_reason/disconnect_reason.bin",
+        "bin/publish/normal_publish/normal_publish.bin",
+        "bin/publish/publish_packet_identifier/publish_packet_identifier.bin",
+    };
+
+    for(int i=0; i < binary_count; i++) {
+        printf("%d\n", i);
+        // std::cout << mqttPacketBinaryPath[i];
+        // Read Binary file
+        std::ifstream ifs(mqttPacketBinaryPath[i],std::ios::binary);
+        if (!ifs) { 
+            return fprintf(stderr, "can't read file\n"); 
+        }
+
+        // seek to end
+        ifs.seekg(0,std::ios::end);
+
+        // get file bytes
+        size_t inSize = ifs.tellg();
+
+        // seek to start
+        ifs.seekg(0,std::ios::beg);
+
+        // packet size check
+        if (inSize < 2 || inSize > 268435461) {
+            return fprintf(stderr, "packet size is invalid\n"); 
+        }
+
+        uint8 *inBuffer = new uint8[inSize];
+
+        // read binary
+        ifs.read((char*)inBuffer, inSize);
+
+        // exec emqtt5 and verimqtt
+        emqtt5(inBuffer, inSize);
+        verimqtt(inBuffer, inSize);
     }
 
-    // Read Binary file
-    std::ifstream ifs(String(argv[1]),std::ios::binary);
-    if (!ifs) { 
-        return fprintf(stderr, "can't read file\n"); 
-    }
-
-    // seek to end
-    ifs.seekg(0,std::ios::end);
-
-    // get file bytes
-    size_t inSize = ifs.tellg();
-
-    // packet size check
-    if (inSize < 2 || inSize > 268435461) {
-        return fprintf(stderr, "packet size is invalid\n"); 
-    }
-
-    // seek to start
-    ifs.seekg(0,std::ios::beg);
-
-    uint8 *inBuffer = new uint8[inSize];
-
-    // read binary
-    ifs.read((char*)inBuffer, inSize);
-
-    // exec emqtt5 and verimqtt
-    emqtt5(inBuffer, inSize);
-    verimqtt(inBuffer, inSize);
     return 0;
 }

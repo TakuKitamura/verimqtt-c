@@ -1,0 +1,9 @@
+disconnect.disconnect_reason_code = 0 // type:uint8_t, max_u8:255
+disconnect.disconnect_reason_code_name = "Normal disconnection" // type:const char*, can use uint8_array
+error.code = 0 // type:uint8_t, max_u8:255
+error.message = "" // type:const char*, can use uint8_array
+flags.flag = 0 // type:uint8_t, max_u8:255
+message_name = "DISCONNECT" // type:const char*, can use uint8_array
+message_type = 14 // type:uint8_t, max_u8:255
+property.property_id = 0 // type:uint8_t, max_u8:255
+remaining_length = 0 // type:uint32_t, max_u32:4294967295
