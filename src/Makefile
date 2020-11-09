@@ -4,12 +4,12 @@ INCLUDE=./kremlin/include
 
 CFLAGS=
 
-CC=gcc -I $(KREMLIB) -I $(INCLUDE) $(CFLAGS) ./kremlin/kremlib/dist/generic/libkremlib.a
+CC=gcc -I $(KREMLIB) -I $(INCLUDE) $(CFLAGS)
 
 
 verimqtt : $(OBJ)
 	make -C ./kremlin/kremlib
-	$(CC) -o ../$@  $^ 
+	$(CC) -o ../$@  $^ ./kremlin/kremlib/dist/generic/libkremlib.a
 	
 common.o : Common.c
 	$(CC) -c $^
