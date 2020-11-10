@@ -401,35 +401,37 @@ int main(int argc, char ** argv)
     std::chrono::system_clock::time_point start, end;
 
     for(int i=0; i < binary_count; i++) {
+        std::string file_path = mqttPacketBinaryPath[i];
+        
+        // Read Binary file
+        std::ifstream ifs(file_path, std::ios::binary);
+        if (!ifs) { 
+            return fprintf(stderr, "can't read file\n"); 
+        }
+
+        // seek to end
+        ifs.seekg(0,std::ios::end);
+
+        // get file bytes
+        size_t inSize = ifs.tellg();
+
+        // seek to start
+        ifs.seekg(0,std::ios::beg);
+
+        // packet size check
+        if (inSize < 2 || inSize > 268435461) {
+            return fprintf(stderr, "packet size is invalid\n"); 
+        }
+
+        uint8 *inBuffer = new uint8[inSize];
+
+        // read binary
+        ifs.read((char*)inBuffer, inSize);
 
         double total_emqtt5_time = 0.0;
         double total_verimqtt_time = 0.0;
-        std::string file_path = mqttPacketBinaryPath[i];
+
         for(int j=0; j < PACKET_COUNT; j++) {
-            // Read Binary file
-            std::ifstream ifs(file_path, std::ios::binary);
-            if (!ifs) { 
-                return fprintf(stderr, "can't read file\n"); 
-            }
-
-            // seek to end
-            ifs.seekg(0,std::ios::end);
-
-            // get file bytes
-            size_t inSize = ifs.tellg();
-
-            // seek to start
-            ifs.seekg(0,std::ios::beg);
-
-            // packet size check
-            if (inSize < 2 || inSize > 268435461) {
-                return fprintf(stderr, "packet size is invalid\n"); 
-            }
-
-            uint8 *inBuffer = new uint8[inSize];
-
-            // read binary
-            ifs.read((char*)inBuffer, inSize);
 
             // exec emqtt5 and verimqtt
 
