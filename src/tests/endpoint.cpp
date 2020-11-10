@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include <fstream>
-#include <array> 
+#include <fstream> 
 #include <chrono>
 
 // We need Logger
@@ -28,25 +27,25 @@ extern "C" {
 #define MQTTStringGetLength(X)  X.getLength()
 #include "Protocol/MQTT/MQTT.hpp"
 
-#define PACKET_COUNT 10000
+#define PACKET_COUNT 100000
 
 typedef Strings::FastString String;
 
 inline int asHex(char ch) { return ch >= '0' && ch <= '9' ? (ch - '0') : (ch >= 'a' && ch <= 'f' ? (ch - 'a' + 10) : (ch >= 'A' && ch <= 'F' ? (ch - 'A' + 10) : 0)); }
 
-int emqtt5(uint8 * inBuffer, size_t inSize) {
+int emqtt5(uint8 * packetBuffer, size_t packetByte) {
     Protocol::MQTT::V5::FixedHeader header;
-    header.raw = inBuffer[0];
+    header.raw = packetBuffer[0];
     // printf("Detected %s packet\n", Protocol::MQTT::V5::Helper::getControlPacketName((Protocol::MQTT::Common::ControlPacketType)(uint8)header.type));
     Protocol::MQTT::Common::VBInt len;
-    uint32 r = len.readFrom(&inBuffer[1], inSize - 1);
+    uint32 r = len.readFrom(&packetBuffer[1], packetByte - 1);
     if (r == Protocol::MQTT::Common::BadData)
         return fprintf(stderr, "Invalid packet length at pos: 1\n"); // Close the socket here, the given data are wrong or not the right protocol
     if (r == Protocol::MQTT::Common::NotEnoughData)
         return fprintf(stderr, "Packet is too short at pos: 1\n");
     // Check packet size
-    if ((uint32)len + 1 + len.getSize() < inSize)
-        printf("Warning: Got additional %d bytes but packet size is coded as: %u\n", (int)inSize, (uint32)len + 1 + len.getSize());
+    if ((uint32)len + 1 + len.getSize() < packetByte)
+        printf("Warning: Got additional %d bytes but packet size is coded as: %u\n", (int)packetByte, (uint32)len + 1 + len.getSize());
     // else printf("with size: %u\n", (uint32)len + 1 + len.getSize()); 
 
     // Then dump it now
@@ -71,8 +70,9 @@ int emqtt5(uint8 * inBuffer, size_t inSize) {
     case Protocol::MQTT::V5::DISCONNECT:  packet = new Protocol::MQTT::V5::RODisconnectPacket; break;
     case Protocol::MQTT::V5::AUTH:        packet = new Protocol::MQTT::V5::ROAuthPacket; break;
     }
-    
-    r = packet->readFrom(inBuffer, inSize);
+
+    // error check
+    r = packet->readFrom(packetBuffer, packetByte);
 
     if (Protocol::MQTT::Common::isError(r))
         return fprintf(stderr, "Could not parse packet with error: %u\n", r);
@@ -85,9 +85,9 @@ int emqtt5(uint8 * inBuffer, size_t inSize) {
     return 0;
 }
 
-int verimqtt(uint8 *inBuffer, size_t inSize) {
+int verimqtt(uint8 *packetBuffer, size_t packetByte) {
     kremlinit_globals();
-    struct_fixed_header data = mqtt_packet_parse(inBuffer, inSize);
+    struct_fixed_header data = mqtt_packet_parse(packetBuffer, packetByte);
 
     /*
     printf("data.message_type = 0x%02x\n", data.message_type);
@@ -369,14 +369,6 @@ int verimqtt(uint8 *inBuffer, size_t inSize) {
 
 int main(int argc, char ** argv)
 {
-    // InitLogger initLogger(true);
-    // First convert the input from what it is to something we can parse
-    // if (argc == 1 || (argc == 2 && String("--help") == argv[1]))
-    // {
-    //     printf("MQTTv5 Packet Parser\nUsage is: %s (BinaryPath)\n", argv[0]);
-    //     return 0; 
-    // }
-
     int binary_count = 16;
 
     std::string mqttPacketBinaryPath[binary_count] = {
@@ -398,7 +390,11 @@ int main(int argc, char ** argv)
         "bin/publish/publish_packet_identifier/publish_packet_identifier.bin",
     };
 
-    std::chrono::system_clock::time_point start, end;
+    // std::ofstream log;
+    // log.open("log.csv", ios::trunc)
+    std::ofstream log("log.csv");
+
+    log << "file_name,packet_count,packet_byte,emqtt5_ave_time[μs],verimqtt_ave_time[μs]" << std::endl;
 
     for(int i=0; i < binary_count; i++) {
         std::string file_path = mqttPacketBinaryPath[i];
@@ -406,59 +402,74 @@ int main(int argc, char ** argv)
         // Read Binary file
         std::ifstream ifs(file_path, std::ios::binary);
         if (!ifs) { 
-            return fprintf(stderr, "can't read file\n"); 
+            return fprintf(stderr, "can't read %s\n", file_path.c_str()); 
         }
 
         // seek to end
         ifs.seekg(0,std::ios::end);
 
         // get file bytes
-        size_t inSize = ifs.tellg();
+        size_t packetByte = ifs.tellg();
 
         // seek to start
         ifs.seekg(0,std::ios::beg);
 
         // packet size check
-        if (inSize < 2 || inSize > 268435461) {
+        if (packetByte < 2 || packetByte > 268435461) {
             return fprintf(stderr, "packet size is invalid\n"); 
         }
 
-        uint8 *inBuffer = new uint8[inSize];
+        uint8 *packetBuffer = new uint8[packetByte];
 
         // read binary
-        ifs.read((char*)inBuffer, inSize);
+        ifs.read((char*)packetBuffer, packetByte);
 
-        double total_emqtt5_time = 0.0;
-        double total_verimqtt_time = 0.0;
+        double totalEmqtt5Time = 0.0;
+        double totalVerimqttTime = 0.0;
 
         for(int j=0; j < PACKET_COUNT; j++) {
 
             // exec emqtt5 and verimqtt
 
+            std::chrono::system_clock::time_point start, end;
+            double mesureTime = 0.0;
+
             // emqtt5 time, C++
             start = std::chrono::system_clock::now();
-            emqtt5(inBuffer, inSize);
+            emqtt5(packetBuffer, packetByte);
             end = std::chrono::system_clock::now();
 
-            double time = static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+            mesureTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-            total_emqtt5_time += time;
+            totalEmqtt5Time += mesureTime;
 
             // verimqtt time, F*
             start = std::chrono::system_clock::now();
-            verimqtt(inBuffer, inSize);
+            verimqtt(packetBuffer, packetByte);
             end = std::chrono::system_clock::now();
 
-            time = static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+            mesureTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-            total_verimqtt_time += time;
+            totalVerimqttTime += mesureTime;
         }
 
-        printf("%s\npacket count %d, emqtt5 ave time %lf[μs], verimqtt ave time %lf[μs]\n\n", \
-            file_path.c_str(), \
-            PACKET_COUNT, \
-            total_emqtt5_time / PACKET_COUNT / 1000.0, \ 
-            total_verimqtt_time / PACKET_COUNT / 1000.0);
+        int baseNameIndex = file_path.find_last_of("/")+1;
+        int dotIndex = file_path.find_last_of(".");
+        std::string baseName = 
+            file_path.substr(baseNameIndex,dotIndex-baseNameIndex);
+
+        printf("%s\npacket count %d\npacket byte %ld\nemqtt5 ave time %lf[μs]\nverimqtt ave time %lf[μs]\n\n", 
+            baseName.c_str(),
+            PACKET_COUNT,
+            packetByte,
+            totalEmqtt5Time / PACKET_COUNT / 1000.0,
+            totalVerimqttTime / PACKET_COUNT / 1000.0);
+
+        log << baseName << ","
+            << PACKET_COUNT << "," 
+            << packetByte << "," 
+            << totalEmqtt5Time / PACKET_COUNT / 1000.0 << "," 
+            << totalVerimqttTime / PACKET_COUNT / 1000.0 << std::endl;
     }
 
     return 0;
