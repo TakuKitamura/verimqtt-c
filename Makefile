@@ -1,2 +1,2 @@
 all:
-	cmake src && make -C src
+	cmake src && make -C src && cd ./src/tests/ && ./MQTTParsePacket

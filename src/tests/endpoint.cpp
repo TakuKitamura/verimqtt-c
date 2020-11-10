@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <array> 
+#include <chrono>
 
 // We need Logger
 // #include "Logger/Logger.hpp"
@@ -27,19 +28,16 @@ extern "C" {
 #define MQTTStringGetLength(X)  X.getLength()
 #include "Protocol/MQTT/MQTT.hpp"
 
-typedef Strings::FastString String;
+#define PACKET_COUNT 10000
 
-// struct InitLogger {
-//     InitLogger(bool withDump) { const unsigned int logMask = ::Logger::Creation|::Logger::Error|::Logger::Network|::Logger::Connection|::Logger::Content|::Logger::Deletion|(withDump ? ::Logger::Dump : 0);
-//     ::Logger::setDefaultSink(new ::Logger::DebugConsoleSink(logMask)); }
-// };
+typedef Strings::FastString String;
 
 inline int asHex(char ch) { return ch >= '0' && ch <= '9' ? (ch - '0') : (ch >= 'a' && ch <= 'f' ? (ch - 'a' + 10) : (ch >= 'A' && ch <= 'F' ? (ch - 'A' + 10) : 0)); }
 
 int emqtt5(uint8 * inBuffer, size_t inSize) {
     Protocol::MQTT::V5::FixedHeader header;
     header.raw = inBuffer[0];
-    printf("Detected %s packet\n", Protocol::MQTT::V5::Helper::getControlPacketName((Protocol::MQTT::Common::ControlPacketType)(uint8)header.type));
+    // printf("Detected %s packet\n", Protocol::MQTT::V5::Helper::getControlPacketName((Protocol::MQTT::Common::ControlPacketType)(uint8)header.type));
     Protocol::MQTT::Common::VBInt len;
     uint32 r = len.readFrom(&inBuffer[1], inSize - 1);
     if (r == Protocol::MQTT::Common::BadData)
@@ -49,7 +47,7 @@ int emqtt5(uint8 * inBuffer, size_t inSize) {
     // Check packet size
     if ((uint32)len + 1 + len.getSize() < inSize)
         printf("Warning: Got additional %d bytes but packet size is coded as: %u\n", (int)inSize, (uint32)len + 1 + len.getSize());
-    else printf("with size: %u\n", (uint32)len + 1 + len.getSize()); 
+    // else printf("with size: %u\n", (uint32)len + 1 + len.getSize()); 
 
     // Then dump it now
     Protocol::MQTT::V5::registerAllProperties();
@@ -73,16 +71,16 @@ int emqtt5(uint8 * inBuffer, size_t inSize) {
     case Protocol::MQTT::V5::DISCONNECT:  packet = new Protocol::MQTT::V5::RODisconnectPacket; break;
     case Protocol::MQTT::V5::AUTH:        packet = new Protocol::MQTT::V5::ROAuthPacket; break;
     }
+    
     r = packet->readFrom(inBuffer, inSize);
+
     if (Protocol::MQTT::Common::isError(r))
         return fprintf(stderr, "Could not parse packet with error: %u\n", r);
 
     // Then dump the packet
     String out;
-    //    if (!
     packet->dump(out);
-    //        return fprintf(stderr, "Could not dump the packet\n");
-    printf("%s\n", (const char*)out);
+    // printf("%s\n", (const char*)out);
 
     return 0;
 }
@@ -90,6 +88,8 @@ int emqtt5(uint8 * inBuffer, size_t inSize) {
 int verimqtt(uint8 *inBuffer, size_t inSize) {
     kremlinit_globals();
     struct_fixed_header data = mqtt_packet_parse(inBuffer, inSize);
+
+    /*
     printf("data.message_type = 0x%02x\n", data.message_type);
     printf("data.message_name = %s\n", data.message_name);
     printf("data.flags.flag = 0x%02x\n", data.flags.flag);
@@ -362,6 +362,8 @@ int verimqtt(uint8 *inBuffer, size_t inSize) {
 
     printf("data.error.code=%u\n", data.error.code);
     printf("data.error.message=%s\n", data.error.message);
+
+    */
     return 0;
 }
 
@@ -377,7 +379,7 @@ int main(int argc, char ** argv)
 
     int binary_count = 16;
 
-    String mqttPacketBinaryPath[binary_count] = {
+    std::string mqttPacketBinaryPath[binary_count] = {
         "bin/property/property_four_byte/property_four_byte.bin",
         "bin/property/property_utf8_pair_string/property_utf8_pair_string.bin",
         "bin/property/property_variable_byte_integer/property_variable_byte.bin",
@@ -396,37 +398,65 @@ int main(int argc, char ** argv)
         "bin/publish/publish_packet_identifier/publish_packet_identifier.bin",
     };
 
+    std::chrono::system_clock::time_point start, end;
+
     for(int i=0; i < binary_count; i++) {
-        printf("%d\n", i);
-        // std::cout << mqttPacketBinaryPath[i];
-        // Read Binary file
-        std::ifstream ifs(mqttPacketBinaryPath[i],std::ios::binary);
-        if (!ifs) { 
-            return fprintf(stderr, "can't read file\n"); 
+
+        double total_emqtt5_time = 0.0;
+        double total_verimqtt_time = 0.0;
+        std::string file_path = mqttPacketBinaryPath[i];
+        for(int j=0; j < PACKET_COUNT; j++) {
+            // Read Binary file
+            std::ifstream ifs(file_path, std::ios::binary);
+            if (!ifs) { 
+                return fprintf(stderr, "can't read file\n"); 
+            }
+
+            // seek to end
+            ifs.seekg(0,std::ios::end);
+
+            // get file bytes
+            size_t inSize = ifs.tellg();
+
+            // seek to start
+            ifs.seekg(0,std::ios::beg);
+
+            // packet size check
+            if (inSize < 2 || inSize > 268435461) {
+                return fprintf(stderr, "packet size is invalid\n"); 
+            }
+
+            uint8 *inBuffer = new uint8[inSize];
+
+            // read binary
+            ifs.read((char*)inBuffer, inSize);
+
+            // exec emqtt5 and verimqtt
+
+            // emqtt5 time, C++
+            start = std::chrono::system_clock::now();
+            emqtt5(inBuffer, inSize);
+            end = std::chrono::system_clock::now();
+
+            double time = static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+
+            total_emqtt5_time += time;
+
+            // verimqtt time, F*
+            start = std::chrono::system_clock::now();
+            verimqtt(inBuffer, inSize);
+            end = std::chrono::system_clock::now();
+
+            time = static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+
+            total_verimqtt_time += time;
         }
 
-        // seek to end
-        ifs.seekg(0,std::ios::end);
-
-        // get file bytes
-        size_t inSize = ifs.tellg();
-
-        // seek to start
-        ifs.seekg(0,std::ios::beg);
-
-        // packet size check
-        if (inSize < 2 || inSize > 268435461) {
-            return fprintf(stderr, "packet size is invalid\n"); 
-        }
-
-        uint8 *inBuffer = new uint8[inSize];
-
-        // read binary
-        ifs.read((char*)inBuffer, inSize);
-
-        // exec emqtt5 and verimqtt
-        emqtt5(inBuffer, inSize);
-        verimqtt(inBuffer, inSize);
+        printf("%s\npacket count %d, emqtt5 ave time %lf[μs], verimqtt ave time %lf[μs]\n\n", \
+            file_path.c_str(), \
+            PACKET_COUNT, \
+            total_emqtt5_time / PACKET_COUNT / 1000.0, \ 
+            total_verimqtt_time / PACKET_COUNT / 1000.0);
     }
 
     return 0;
