@@ -27,7 +27,7 @@ extern "C" {
 #define MQTTStringGetLength(X)  X.getLength()
 #include "Protocol/MQTT/MQTT.hpp"
 
-#define PACKET_COUNT 100000
+#define PACKET_COUNT 1000000
 
 typedef Strings::FastString String;
 
