@@ -1,0 +1,16 @@
+disconnect.disconnect_reason_code = 0 // type:uint8_t, max_u8:255
+disconnect.disconnect_reason_code_name = "Normal disconnection" // type:const char*, can use uint8_array
+error.code = 0 // type:uint8_t, max_u8:255
+error.message = "" // type:const char*, can use uint8_array
+flags.flag = 0 // type:uint8_t, max_u8:255
+message_name = "DISCONNECT" // type:const char*, can use uint8_array
+message_type = 14 // type:uint8_t, max_u8:255
+property.property_id = 38 // type:uint8_t, max_u8:255
+property.property_type_id = 7 // type:uint8_t, max_u8:255
+property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_length = 10 // type:uint16_t, max_u16:65535
+property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_status_code = 0 // type:uint8_t, max_u8:255
+property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_value = "disconnect" // type:uint8_t*, can use uint8_array
+property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_length = 13 // type:uint16_t, max_u16:65535
+property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_status_code = 0 // type:uint8_t, max_u8:255
+property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_value = "user_property" // type:uint8_t*, can use uint8_array
+remaining_length = 30 // type:uint32_t, max_u32:4294967295
