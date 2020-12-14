@@ -192,19 +192,24 @@ PUBLISH control packet (rlength: 20)
         );
     }
 
-    // variable_header += "Properties with length VBInt: 5";
-
     std::string property_data = fmt::format(
-                                    "    Type {property_type_name}\n      {property_value}",
+                                    "    Type {property_type_name}\n      {property_value}\n",
                                     fmt::arg("property_type_name", property_type_name),
                                     fmt::arg("property_value", property_value)
                                 );
 
+    
+    std::string publish_payload = fmt::format(
+        "  Payload (length: {publish_payload_length})",
+        fmt::arg("publish_payload_length", d.publish.payload.payload_length)
+    );
+
     std::string variable_data = fmt::format(
-                        "{variable_header}Properties with length VBInt: {property_length}\n{property_data}",
+                        "{variable_header}Properties with length VBInt: {property_length}\n{property_data}{publish_payload}",
                         fmt::arg("variable_header", variable_header),
                         fmt::arg("property_length", d.property.property_type_id == 0 ? "0" : "?"),
-                        fmt::arg("property_data", d.property.property_type_id == 0 ? "" : property_data)
+                        fmt::arg("property_data", d.property.property_type_id == 0 ? "" : property_data),
+                        fmt::arg("publish_payload", publish_payload)
                     );
 
     std::string base_format = fmt::format(
