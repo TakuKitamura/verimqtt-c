@@ -17,7 +17,7 @@ extern "C" {
 
 // We need MQTT client 
 // Swap our own string class here and don't depend on the selected build flags
-#define MQTTDumpCommunication 1
+#define MQTTDumpCommunication 10000
 #undef MQTTString
 #define MQTTString Strings::FastString
 #undef MQTTROString
@@ -198,18 +198,124 @@ PUBLISH control packet (rlength: 20)
                                     fmt::arg("property_value", property_value)
                                 );
 
-    
-    std::string publish_payload = fmt::format(
-        "  Payload (length: {publish_payload_length})",
-        fmt::arg("publish_payload_length", d.publish.payload.payload_length)
-    );
+    std::string payload = "";
+
+    if (!strcmp(d.message_name, "PUBLISH") || !strcmp(d.message_name, "DISCONNECT")) {
+        payload = d.publish.payload.payload_length == 0 ? "  <none>" : fmt::format(
+            "  Payload (length: {payload_length})",
+            fmt::arg("payload_length", d.publish.payload.payload_length)
+        );
+    }
+
+    std::string connect_payload = "";
+
+    if (!strcmp(d.message_name, "CONNECT")) {
+
+        std::string will_property_type_name = "?";
+        if (d.connect.will.connect_will_property.property_id == 1) {
+            will_property_type_name = "PayloadFormat";
+        } else if (d.connect.will.connect_will_property.property_id == 3) {
+            will_property_type_name = "ContentType";
+        } else if (d.connect.will.connect_will_property.property_id == 2) {
+            will_property_type_name = "MessageExpiryInterval";
+        } else if (d.connect.will.connect_will_property.property_id == 8) {
+            will_property_type_name = "ResponseTopic";
+        } else if (d.connect.will.connect_will_property.property_id == 9) {
+            will_property_type_name = "CorrelationData";
+        } else if (d.connect.will.connect_will_property.property_id == 11) {
+            will_property_type_name = "SubscriptionID";
+        } else if (d.connect.will.connect_will_property.property_id == 33) {
+            will_property_type_name = "ReceiveMax";
+        } else if (d.connect.will.connect_will_property.property_id == 35) {
+            will_property_type_name = "TopicAlias";
+        } else if (d.connect.will.connect_will_property.property_id == 38) {
+            will_property_type_name = "UserProperty";
+        }
+
+        std::string will_property_value = "?";
+
+        if (d.connect.will.connect_will_property.property_type_id == 1) {
+            // one_byte
+            will_property_value = fmt::format("{:d}", d.connect.will.connect_will_property.property_type_struct.one_byte_integer_struct);
+        } else if (d.connect.will.connect_will_property.property_type_id == 2) {
+            will_property_value = fmt::format("{:d}", d.connect.will.connect_will_property.property_type_struct.two_byte_integer_struct);
+        } else if (d.connect.will.connect_will_property.property_type_id == 3) {
+            will_property_value = fmt::format("{:d}", d.connect.will.connect_will_property.property_type_struct.four_byte_integer_struct);
+        } else if (d.connect.will.connect_will_property.property_type_id == 4) {
+            will_property_value = fmt::format(
+                "Str ({utf8_string_length} bytes): {utf8_string_value}",
+                fmt::arg("utf8_string_length", d.connect.will.connect_will_property.property_type_struct.utf8_encoded_string_struct.utf8_string_length),
+                fmt::arg("utf8_string_value", std::string((char *)d.connect.will.connect_will_property.property_type_struct.utf8_encoded_string_struct.utf8_string_value).substr(0,d.connect.will.connect_will_property.property_type_struct.utf8_encoded_string_struct.utf8_string_length))
+            );
+        } else if (d.connect.will.connect_will_property.property_type_id == 5) {
+            will_property_value = fmt::format("{:d}", d.connect.will.connect_will_property.property_type_struct.variable_byte_integer_struct);
+        } else if (d.connect.will.connect_will_property.property_type_id == 6) {
+            std::string x = "";
+            for(int i=0; i < d.connect.will.connect_will_property.property_type_struct.binary_data_struct.binary_length; i++) {
+                x += fmt::format("{:x}", d.connect.will.connect_will_property.property_type_struct.binary_data_struct.binary_value[i]);
+            }
+            will_property_value = fmt::format(
+                "Bin ({binary_length} bytes):{binary_value}",
+                fmt::arg("binary_length", d.connect.will.connect_will_property.property_type_struct.binary_data_struct.binary_length),
+                fmt::arg("binary_value", x)
+            );
+        } else if (d.connect.will.connect_will_property.property_type_id == 7) {
+            will_property_value = fmt::format(
+                "KV:\n        Str ({utf8_string_pair_key_length} bytes): {utf8_string_pair_key_value}\n        Str ({utf8_string_pair_value_length} bytes): {utf8_string_pair_value_value}",
+                fmt::arg("utf8_string_pair_key_length", d.connect.will.connect_will_property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_length),
+                fmt::arg("utf8_string_pair_key_value", std::string((char *)d.connect.will.connect_will_property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_value).substr(0,d.connect.will.connect_will_property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_length)),
+                fmt::arg("utf8_string_pair_value_length", d.connect.will.connect_will_property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_length),
+                fmt::arg("utf8_string_pair_value_value", std::string((char *)d.connect.will.connect_will_property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_value).substr(0,d.connect.will.connect_will_property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_length))
+            );
+        }
+
+        std::string will_property_data = fmt::format(
+                                        "    Type {will_property_type_name}\n          {will_property_value}\n",
+                                        fmt::arg("will_property_type_name", will_property_type_name),
+                                        fmt::arg("will_property_value", will_property_value)
+                                    );
+
+
+        std::string will_message = "";
+        if (d.connect.will.connect_will_property.property_id != 255) {
+            std::string x = "";
+            for(int i=0; i < d.connect.will.connect_will_payload.binary_length; i++) {
+                x += fmt::format("{:x}", d.connect.will.connect_will_payload.binary_value[i]);
+            }
+            will_message = fmt::format(
+                "Will message\n      Properties with length VBInt: ?\n    {will_property_data}      Str ({will_topic_length} bytes): {will_topic_name}\n      Bin ({will_payload_length} bytes):{will_payload_value}\n    ",
+                fmt::arg("will_property_data", will_property_data),
+                fmt::arg("will_topic_length", d.connect.will.connect_will_topic_name.utf8_string_length),
+                fmt::arg("will_topic_name", d.connect.will.connect_will_topic_name.utf8_string_value),
+                fmt::arg("will_payload_length", d.connect.will.connect_will_payload.binary_length),
+                fmt::arg("will_payload_value", x)
+            );
+        }
+
+
+        std::string password = "";
+        for(int i=0; i < d.connect.password.binary_length; i++) {
+            password += fmt::format("{:x}", d.connect.password.binary_value[i]);
+        }
+        connect_payload = fmt::format(
+            "  CONNECT payload\n    ClientID: Str ({connect_id_length} bytes): {connect_id}\n    {will_message}Username: Str ({user_name_length} bytes): {user_name}\n    Password: Bin ({password_length} bytes):{password}\n",
+            fmt::arg("connect_id_length", d.connect.connect_id.utf8_string_length),
+            fmt::arg("connect_id", std::string((char *)d.connect.connect_id.utf8_string_value).substr(0,d.connect.connect_id.utf8_string_length)),
+            fmt::arg("will_message", will_message),
+            fmt::arg("user_name_length", d.connect.user_name.utf8_string_length),
+            fmt::arg("user_name", std::string((char *)d.connect.user_name.utf8_string_value).substr(0,d.connect.user_name.utf8_string_length)),
+
+            fmt::arg("password_length", d.connect.password.binary_length),
+            fmt::arg("password", password)
+        );
+    }
 
     std::string variable_data = fmt::format(
-                        "{variable_header}Properties with length VBInt: {property_length}\n{property_data}{publish_payload}",
+                        "{variable_header}Properties with length VBInt: ?\n{property_data}{connect_payload}{payload}",
                         fmt::arg("variable_header", variable_header),
-                        fmt::arg("property_length", d.property.property_type_id == 0 ? "0" : "?"),
                         fmt::arg("property_data", d.property.property_type_id == 0 ? "" : property_data),
-                        fmt::arg("publish_payload", publish_payload)
+                        fmt::arg("connect_payload", connect_payload),
+                        fmt::arg("payload", payload)
                     );
 
     std::string base_format = fmt::format(
