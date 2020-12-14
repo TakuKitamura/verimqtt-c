@@ -108,11 +108,20 @@ PUBLISH control packet (rlength: 20)
                 fmt::arg("dup_flag", d.flags.dup_flag)
             );
 
-    std::string variable_data = "";
+    std::string variable_header = "";
     if (!strcmp(d.message_name, "CONNECT")) {
-
+        variable_header = fmt::format(
+            "CONNECT packet (clean {clean_start}, will {will_flag}, willQoS {will_qos}, willRetain {will_retain}, password {password}, username {user_name}, keepAlive: {keep_alive})",
+            fmt::arg("clean_start",d.connect.flags.clean_start),
+            fmt::arg("will_flag", d.connect.flags.will_flag),
+            fmt::arg("will_qos", d.connect.flags.will_qos),
+            fmt::arg("will_retain", d.connect.flags.will_retain),
+            fmt::arg("password", d.connect.flags.password),
+            fmt::arg("user_name", d.connect.flags.user_name),
+            fmt::arg("keep_alive", d.connect.keep_alive)
+        );
     } else if (!strcmp(d.message_name, "PUBLISH")) {
-        variable_data = fmt::format(
+        variable_header = fmt::format(
             "PUBLISH packet (id {packet_identifier}): Str ({topic_length} bytes): {topic_name}",
             fmt::arg("packet_identifier",
                 fmt::format(
@@ -126,6 +135,14 @@ PUBLISH control packet (rlength: 20)
     } else if (!strcmp(d.message_name, "DISCONNECT")) {
 
     }
+
+    // variable_header += "Properties with length VBInt: 5";
+
+    std::string variable_data = fmt::format(
+                        "{variable_header}\n  Properties with length VBInt: {property_length}\n  ",
+                        fmt::arg("variable_header", variable_header),
+                        fmt::arg("property_length", "?")
+                    );
 
     std::string base_format = fmt::format(
             "{message_name} control packet (rlength: {remaining_length})\n  Header: (type {message_name}, {flag_message})\n  {variable_data}",
