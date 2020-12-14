@@ -111,7 +111,7 @@ PUBLISH control packet (rlength: 20)
     std::string variable_header = "";
     if (!strcmp(d.message_name, "CONNECT")) {
         variable_header = fmt::format(
-            "CONNECT packet (clean {clean_start}, will {will_flag}, willQoS {will_qos}, willRetain {will_retain}, password {password}, username {user_name}, keepAlive: {keep_alive})",
+            "CONNECT packet (clean {clean_start}, will {will_flag}, willQoS {will_qos}, willRetain {will_retain}, password {password}, username {user_name}, keepAlive: {keep_alive})\n  ",
             fmt::arg("clean_start",d.connect.flags.clean_start),
             fmt::arg("will_flag", d.connect.flags.will_flag),
             fmt::arg("will_qos", d.connect.flags.will_qos),
@@ -122,7 +122,7 @@ PUBLISH control packet (rlength: 20)
         );
     } else if (!strcmp(d.message_name, "PUBLISH")) {
         variable_header = fmt::format(
-            "PUBLISH packet (id {packet_identifier}): Str ({topic_length} bytes): {topic_name}",
+            "PUBLISH packet (id {packet_identifier}): Str ({topic_length} bytes): {topic_name}\n  ",
             fmt::arg("packet_identifier",
                 fmt::format(
                     "{:#06x}",
@@ -136,12 +136,75 @@ PUBLISH control packet (rlength: 20)
 
     }
 
+    std::string property_type_name = "?";
+    if (d.property.property_id == 1) {
+        property_type_name = "PayloadFormat";
+    } else if (d.property.property_id == 2) {
+        property_type_name = "MessageExpiryInterval";
+    } else if (d.property.property_id == 8) {
+        property_type_name = "ResponseTopic";
+    } else if (d.property.property_id == 9) {
+        property_type_name = "CorrelationData";
+    } else if (d.property.property_id == 11) {
+        property_type_name = "SubscriptionID";
+    } else if (d.property.property_id == 33) {
+        property_type_name = "ReceiveMax";
+    } else if (d.property.property_id == 35) {
+        property_type_name = "TopicAlias";
+    } else if (d.property.property_id == 38) {
+        property_type_name = "UserProperty";
+    }
+
+    std::string property_value = "?";
+
+    if (d.property.property_type_id == 1) {
+        // one_byte
+        property_value = fmt::format("{:d}", d.property.property_type_struct.one_byte_integer_struct);
+    } else if (d.property.property_type_id == 2) {
+        property_value = fmt::format("{:d}", d.property.property_type_struct.two_byte_integer_struct);
+    } else if (d.property.property_type_id == 3) {
+        property_value = fmt::format("{:d}", d.property.property_type_struct.four_byte_integer_struct);
+    } else if (d.property.property_type_id == 4) {
+        property_value = fmt::format(
+            "Str ({utf8_string_length} bytes): {utf8_string_value}",
+            fmt::arg("utf8_string_length", d.property.property_type_struct.utf8_encoded_string_struct.utf8_string_length),
+            fmt::arg("utf8_string_value", std::string((char *)d.property.property_type_struct.utf8_encoded_string_struct.utf8_string_value).substr(0,d.property.property_type_struct.utf8_encoded_string_struct.utf8_string_length))
+        );
+    } else if (d.property.property_type_id == 5) {
+        property_value = fmt::format("{:d}", d.property.property_type_struct.variable_byte_integer_struct);
+    } else if (d.property.property_type_id == 6) {
+        std::string x = "";
+        for(int i=0; i < d.property.property_type_struct.binary_data_struct.binary_length; i++) {
+            x += fmt::format("{:x}", d.property.property_type_struct.binary_data_struct.binary_value[i]);
+        }
+        property_value = fmt::format(
+            "Bin ({binary_length} bytes):{binary_value}",
+            fmt::arg("binary_length", d.property.property_type_struct.binary_data_struct.binary_length),
+            fmt::arg("binary_value", x)
+        );
+    } else if (d.property.property_type_id == 7) {
+        property_value = fmt::format(
+            "KV:\n        Str ({utf8_string_pair_key_length} bytes): {utf8_string_pair_key_value}\n        Str ({utf8_string_pair_value_length} bytes): {utf8_string_pair_value_value}",
+            fmt::arg("utf8_string_pair_key_length", d.property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_length),
+            fmt::arg("utf8_string_pair_key_value", std::string((char *)d.property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_value).substr(0,d.property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_key.utf8_string_length)),
+            fmt::arg("utf8_string_pair_value_length", d.property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_length),
+            fmt::arg("utf8_string_pair_value_value", std::string((char *)d.property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_value).substr(0,d.property.property_type_struct.utf8_string_pair_struct.utf8_string_pair_value.utf8_string_length))
+        );
+    }
+
     // variable_header += "Properties with length VBInt: 5";
 
+    std::string property_data = fmt::format(
+                                    "    Type {property_type_name}\n      {property_value}",
+                                    fmt::arg("property_type_name", property_type_name),
+                                    fmt::arg("property_value", property_value)
+                                );
+
     std::string variable_data = fmt::format(
-                        "{variable_header}\n  Properties with length VBInt: {property_length}\n  ",
+                        "{variable_header}Properties with length VBInt: {property_length}\n{property_data}",
                         fmt::arg("variable_header", variable_header),
-                        fmt::arg("property_length", "?")
+                        fmt::arg("property_length", d.property.property_type_id == 0 ? "0" : "?"),
+                        fmt::arg("property_data", d.property.property_type_id == 0 ? "" : property_data)
                     );
 
     std::string base_format = fmt::format(
