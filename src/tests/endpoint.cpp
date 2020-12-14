@@ -108,11 +108,31 @@ PUBLISH control packet (rlength: 20)
                 fmt::arg("dup_flag", d.flags.dup_flag)
             );
 
+    std::string variable_data = "";
+    if (!strcmp(d.message_name, "CONNECT")) {
+
+    } else if (!strcmp(d.message_name, "PUBLISH")) {
+        variable_data = fmt::format(
+            "PUBLISH packet (id {packet_identifier}): Str ({topic_length} bytes): {topic_name}",
+            fmt::arg("packet_identifier",
+                fmt::format(
+                    "{:#06x}",
+                    d.publish.packet_identifier == 0xffff ? 0x0000 : d.publish.packet_identifier
+                )
+            ),
+            fmt::arg("topic_length", d.publish.topic_length),
+            fmt::arg("topic_name", d.publish.topic_name)
+        );
+    } else if (!strcmp(d.message_name, "DISCONNECT")) {
+
+    }
+
     std::string base_format = fmt::format(
-            "{message_name} control packet (rlength: {remaining_length})\n  Header: (type {message_name}, {flag_message})",
+            "{message_name} control packet (rlength: {remaining_length})\n  Header: (type {message_name}, {flag_message})\n  {variable_data}",
             fmt::arg("message_name", d.message_name),
             fmt::arg("remaining_length", d.remaining_length),
-            fmt::arg("flag_message", flag_message)
+            fmt::arg("flag_message", flag_message),
+            fmt::arg("variable_data", variable_data)
         );
 
     std::cout << base_format << std::endl;
