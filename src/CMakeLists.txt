@@ -18,4 +18,5 @@ endif ()
 
 add_subdirectory(lib)
 add_subdirectory(tests)
+add_subdirectory(fmt-7.1.3)
 
