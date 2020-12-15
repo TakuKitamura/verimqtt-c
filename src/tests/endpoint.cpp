@@ -17,7 +17,7 @@ extern "C" {
 
 // We need MQTT client 
 // Swap our own string class here and don't depend on the selected build flags
-#define MQTTDumpCommunication 10000
+#define MQTTDumpCommunication 1
 #undef MQTTString
 #define MQTTString Strings::FastString
 #undef MQTTROString
