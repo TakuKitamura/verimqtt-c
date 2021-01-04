@@ -1,5 +1,5 @@
-SET(CMAKE_CXX_FLAGS "-O0")
-SET(CMAKE_C_FLAGS "-O0")
+SET(CMAKE_CXX_FLAGS "-O2")
+SET(CMAKE_C_FLAGS "-O2")
 
 add_executable(MQTTc 
     MQTTc.cpp

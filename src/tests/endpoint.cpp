@@ -29,7 +29,7 @@ extern "C"
 #define MQTTStringGetLength(X) X.getLength()
 #include "Protocol/MQTT/MQTT.hpp"
 
-#define PACKET_COUNT 1000
+#define PACKET_COUNT 100000
 
 typedef Strings::FastString String;
 
@@ -482,7 +482,7 @@ int main(int argc, char **argv)
 
             // emqtt5 time, C++
             start = std::chrono::system_clock::now();
-            std::string x = emqtt5(packetBuffer, packetByte);
+            std::string emqtt_result = emqtt5(packetBuffer, packetByte);
             // printf("%s\n", x.c_str());
             end = std::chrono::system_clock::now();
 
@@ -492,7 +492,7 @@ int main(int argc, char **argv)
 
             // verimqtt time, F*
             start = std::chrono::system_clock::now();
-            std::string y = verimqtt(packetBuffer, packetByte);
+            std::string verimqtt_result = verimqtt(packetBuffer, packetByte);
             // printf("%s\n", x.c_str());
 
             end = std::chrono::system_clock::now();
